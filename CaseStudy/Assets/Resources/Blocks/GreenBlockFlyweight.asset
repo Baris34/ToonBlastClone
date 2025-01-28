@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a45e8cfc93f7df44287f086c1fb2fa15, type: 3}
+  m_Name: GreenBlockFlyweight
+  m_EditorClassIdentifier: 
+  sprite: {fileID: -7364823422338184377, guid: fe11b76045c4f8a40b7f8c286e8af285, type: 3}
+  firstComboSprite: {fileID: 3291406690555587084, guid: 418c80cd73f7f7d40a865e41ee56e2c4, type: 3}
+  secondComboSprite: {fileID: -2176861220364285743, guid: 1386618af97f39e4db172ec2b99cb844, type: 3}
+  thirdComboSprite: {fileID: 6787462199040882907, guid: b664e93eb45216145b1f6f4c3450be81, type: 3}
