@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a45e8cfc93f7df44287f086c1fb2fa15, type: 3}
   m_Name: PurpleBlockFlyweight
   m_EditorClassIdentifier: 
-  sprite: {fileID: 0}
-  firstComboSprite: {fileID: 0}
-  secondComboSprite: {fileID: 0}
-  thirdComboSprite: {fileID: 0}
+  sprite: {fileID: 8161472552560778960, guid: 56a676d651078654091d3dca01638116, type: 3}
+  firstComboSprite: {fileID: -6416537123964203564, guid: d0db7929df057ab4fbd8726938bd375b, type: 3}
+  secondComboSprite: {fileID: -2693315669398477313, guid: 9f9f467e4e872f74480c71d71c55eefe, type: 3}
+  thirdComboSprite: {fileID: 1386842339749069192, guid: 0a62f86e720028a4f91a174187c9f172, type: 3}

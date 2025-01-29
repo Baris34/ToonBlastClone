@@ -3,9 +3,13 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 public class GridManager : MonoBehaviour
 {
+    [Header("Object Pool")]
+    public int initialPoolSize = 100;
+    private Queue<Block> blockPool = new Queue<Block>();
+
+
     [Header("Grid Settings")]
-    public int rows = 10;
-    public int cols = 8;
+    
     public GameObject blockPrefab;
     public GridLayoutGroup gridLayoutGroup; // GridArea objesinin GridLayoutGroup bileþenine referans
 
@@ -15,36 +19,42 @@ public class GridManager : MonoBehaviour
 
     private Block[,] grid; // Bloklarý tutacak 2D dizi
 
+    private void Awake()
+    {
+        // Pool’u burada baþlatýyoruz
+        InitializePool();
+    }
     private void Start()
     {
-        grid = new Block[rows, cols];
+        grid = new Block[currentLevelData.rows, currentLevelData.cols];
         CreateGrid();
     }
 
     private void CreateGrid()
     {
-        gridLayoutGroup.constraintCount = cols; // Sütun sayýsýný ayarla
+        gridLayoutGroup.constraintCount = currentLevelData.cols; // Sütun sayýsýný ayarla
         gridLayoutGroup.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         
 
 
-        for (int r = 0; r < rows; r++)
+        for (int r = 0; r < currentLevelData.rows; r++)
         {
-            for (int c = 0; c < cols; c++)
+            for (int c = 0; c < currentLevelData.cols; c++)
             {
                 // Rastgele bir BlockFlyweight seç
                 int randomIndex = Random.Range(0, blockFlyweights.Count);
                 BlockFlyweight selectedFlyweight = blockFlyweights[randomIndex];
 
                 // Blok objesini oluþtur ve baþlat
-                GameObject newBlock = Instantiate(blockPrefab, gridLayoutGroup.transform); // Bloklarý GridArea'nýn child'ý olarak oluþtur
-                grid[r, c] = newBlock.GetComponent<Block>();
+                Block block = GetBlockFromPool();
+                block.transform.SetParent(gridLayoutGroup.transform, false);
+                grid[r, c] = block;
                 grid[r, c].Initialize(selectedFlyweight, r, c);
             }
         }
         // Grid'i ekranda ortala
-        float gridWidth = cols * gridLayoutGroup.cellSize.x;
-        float gridHeight = rows * gridLayoutGroup.cellSize.y;
+        float gridWidth = currentLevelData.cols * gridLayoutGroup.cellSize.x;
+        float gridHeight = currentLevelData.rows * gridLayoutGroup.cellSize.y;
         gridLayoutGroup.GetComponent<RectTransform>().sizeDelta = new Vector2(gridWidth, gridHeight);
 
         // GridArea'yý ortala
@@ -90,7 +100,6 @@ public class GridManager : MonoBehaviour
     {
         List<List<Block>> matchedGroups = new List<List<Block>>();
         bool[,] visited = new bool[currentLevelData.rows, currentLevelData.cols];
-        Debug.Log("FindMatchedGroups çaðrýldý");
 
         for (int r = 0; r < currentLevelData.rows; r++)
         {
@@ -104,7 +113,6 @@ public class GridManager : MonoBehaviour
 
                     if (currentGroup.Count > 1)
                     {
-                        Debug.Log("Grup bulundu, eleman sayýsý: " + currentGroup.Count);
                         matchedGroups.Add(currentGroup);
                     }
                 }
@@ -113,7 +121,31 @@ public class GridManager : MonoBehaviour
 
         return matchedGroups;
     }
-
+    private void InitializePool()
+    {
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            GameObject obj = Instantiate(blockPrefab, transform);
+            obj.SetActive(false);
+            blockPool.Enqueue(obj.GetComponent<Block>());
+        }
+    }
+    private Block GetBlockFromPool()
+    {
+        Block block;
+        if (blockPool.Count > 0)
+        {
+            block = blockPool.Dequeue();
+            block.gameObject.SetActive(true);
+            return block;
+        }
+        return null;
+    }
+    private void ReturnBlockToPool(Block block)
+    {
+        block.gameObject.SetActive(false);
+        blockPool.Enqueue(block);
+    }
     private void FindGroupDFS(int row, int col, BlockFlyweight flyweight, List<Block> currentGroup, bool[,] visited)
     {
         if (row < 0 || row >= currentLevelData.rows || col < 0 || col >= currentLevelData.cols || visited[row, col] || grid[row, col] == null || grid[row, col].flyweight != flyweight)
@@ -145,21 +177,24 @@ public class GridManager : MonoBehaviour
     {
         currentLevelData = levelData;
 
-        // Mevcut bloklarý yok et (veya havuza geri koy)
         foreach (Transform child in gridLayoutGroup.transform)
         {
-            Destroy(child.gameObject);
+            Block block = child.GetComponent<Block>();
+            if (block != null)
+            {
+                ReturnBlockToPool(block);
+            }
         }
 
         // Blok dizisini temizle
-        for (int i = 0; i < grid.GetLength(rows); i++)
+        for (int i = 0; i < grid.GetLength(currentLevelData.rows); i++)
         {
-            for (int j = 0; j < grid.GetLength(cols); j++)
+            for (int j = 0; j < grid.GetLength(currentLevelData.cols); j++)
             {
                 grid[i, j] = null;
             }
         }
-
+        grid = new Block[currentLevelData.rows, currentLevelData.cols];
         // Grid'i tekrar oluþtur
         CreateGrid();
     }

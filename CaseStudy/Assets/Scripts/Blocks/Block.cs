@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class Block : MonoBehaviour
@@ -7,43 +8,39 @@ public class Block : MonoBehaviour
     public int row;
     public int col;
     public bool isMatched = false; // Eþleþti mi?
+    private Image imageComp;
+
+    public GridManager gridManager;
+    private void Awake()
+    {
+        imageComp = GetComponent<Image>();
+    }
 
     public void Initialize(BlockFlyweight flyweight, int row, int col)
     {
         this.flyweight = flyweight;
         this.row = row;
         this.col = col;
-        GetComponent<Image>().sprite = flyweight.sprite;
+        imageComp.sprite = flyweight.sprite;
         // GetComponent<Image>().color = flyweight.color; // Eðer renk bilgisini BlockFlyweight'te tutuyorsan
     }
     public void UpdateIconByGroupSize(int groupSize, LevelData levelData)
     {
         if (groupSize <= levelData.comboThresholdA)
         {
-            GetComponent<Image>().sprite = flyweight.sprite;
+            imageComp.sprite = flyweight.sprite;
         }
         else if (groupSize <= levelData.comboThresholdB)
         {
-            GetComponent<Image>().sprite = flyweight.firstComboSprite;
+            imageComp.sprite = flyweight.firstComboSprite;
         }
-        else if(groupSize <= levelData.comboThresholdC)
+        else if (groupSize <= levelData.comboThresholdC)
         {
-            GetComponent<Image>().sprite = flyweight.secondComboSprite;
+            imageComp.sprite = flyweight.secondComboSprite;
         }
         else
         {
-            GetComponent<Image>().sprite = flyweight.thirdComboSprite;
+            imageComp.sprite = flyweight.thirdComboSprite;
         }
     }
-    void Start()
-    {
-        
-    }
-    
-    void Update()
-    {
-
-    }
-    
-    
 }

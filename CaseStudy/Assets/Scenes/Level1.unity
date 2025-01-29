@@ -148,8 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a4571b354eb5e26468cb3063090de335, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rows: 10
-  cols: 12
+  initialPoolSize: 120
   blockPrefab: {fileID: 6138283136260995973, guid: 63335ce5e26be6149bc31364e1a3c8e2, type: 3}
   gridLayoutGroup: {fileID: 458740062}
   blockFlyweights:
@@ -157,6 +156,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b9f217d021e5cba42a3b3b7bda78a2ac, type: 2}
   - {fileID: 11400000, guid: 84acd28fc2f8f6045a5eb64f17781052, type: 2}
   - {fileID: 11400000, guid: 82e9ecc6c555a204193608918c7a1e0a, type: 2}
+  - {fileID: 11400000, guid: 6a1071b1dedb89742a25361142f47e82, type: 2}
   currentLevelData: {fileID: 11400000, guid: 1f8e43e14ab24794f85e4e5d59f9810a, type: 2}
 --- !u!4 &285291904
 Transform:
