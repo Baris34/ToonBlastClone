@@ -2,45 +2,69 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(BoxCollider2D))] // 2D týklama için gereken collider
 public class Block : MonoBehaviour
 {
     public BlockFlyweight flyweight;
     public int row;
     public int col;
-    public bool isMatched = false; // Eþleþti mi?
-    private Image imageComp;
+    public bool isMatched = false;
+    private SpriteRenderer spriteRenderer;
 
-    public GridManager gridManager;
+    // GridManager referansýný, blok týklandýðýnda haber verebilmek için tutuyoruz
+    [HideInInspector]
+    public BoardManager boardManager;
+
     private void Awake()
     {
-        imageComp = GetComponent<Image>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        // BoxCollider2D ekli olduðunu da varsayýyoruz (RequireComponent kullandýk)
     }
 
-    public void Initialize(BlockFlyweight flyweight, int row, int col)
+    // Pool’dan geldiðinde veya yeni oluþturulduðunda ilk ayarlar
+    public void Initialize(BlockFlyweight fw, int r, int c)
     {
-        this.flyweight = flyweight;
-        this.row = row;
-        this.col = col;
-        imageComp.sprite = flyweight.sprite;
-        // GetComponent<Image>().color = flyweight.color; // Eðer renk bilgisini BlockFlyweight'te tutuyorsan
+        flyweight = fw;
+        row = r;
+        col = c;
+        isMatched = false;
+
+        if (spriteRenderer != null && fw != null)
+        {
+            spriteRenderer.sprite = fw.sprite; // Normal sprite
+        }
     }
+
+    // Grup boyutuna göre sprite deðiþtiren metod (combo logic)
     public void UpdateIconByGroupSize(int groupSize, LevelData levelData)
     {
+        if (spriteRenderer == null || flyweight == null) return;
+
         if (groupSize <= levelData.comboThresholdA)
         {
-            imageComp.sprite = flyweight.sprite;
+            spriteRenderer.sprite = flyweight.sprite;
         }
         else if (groupSize <= levelData.comboThresholdB)
         {
-            imageComp.sprite = flyweight.firstComboSprite;
+            spriteRenderer.sprite = flyweight.firstComboSprite;
         }
         else if (groupSize <= levelData.comboThresholdC)
         {
-            imageComp.sprite = flyweight.secondComboSprite;
+            spriteRenderer.sprite = flyweight.secondComboSprite;
         }
         else
         {
-            imageComp.sprite = flyweight.thirdComboSprite;
+            spriteRenderer.sprite = flyweight.thirdComboSprite;
+        }
+    }
+
+    // 2D’de týklamayý bu þekilde alýyoruz
+    private void OnMouseDown()
+    {
+        if (boardManager != null)
+        {
+            boardManager.OnBlockClicked(this);
         }
     }
 }

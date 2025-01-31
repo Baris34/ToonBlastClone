@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
-    public GridManager gridManager;
+    public BoardManager gridManager;
     public LevelData level1Data;
     public LevelData level2Data;
 
