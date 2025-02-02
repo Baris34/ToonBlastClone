@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 428435569}
   - component: {fileID: 428435568}
   - component: {fileID: 428435567}
+  - component: {fileID: 428435570}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -211,6 +212,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &428435570
+MonoBehaviour:
+  m_ObjectHideFlags: 64
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 428435566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
 --- !u!1 &519699208
 GameObject:
   m_ObjectHideFlags: 0
@@ -241,7 +286,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 8507056566188236141, guid: b9a294f1a91dae84da356a7dd55256a6, type: 3}
-  initialPoolSize: 4
+  initialPoolSize: 9
 --- !u!4 &519699210
 Transform:
   m_ObjectHideFlags: 0
@@ -290,10 +335,12 @@ MonoBehaviour:
   blockFlyweights:
   - {fileID: 11400000, guid: 28b0d6981c5f8734bbd9fa8f700a3950, type: 2}
   - {fileID: 11400000, guid: 82e9ecc6c555a204193608918c7a1e0a, type: 2}
+  - {fileID: 11400000, guid: 84acd28fc2f8f6045a5eb64f17781052, type: 2}
   - {fileID: 11400000, guid: 3e98daeded6796548bfcda9798b811b1, type: 2}
   cellSize: {x: 0.7, y: 0.8}
   poolManager: {fileID: 519699209}
   deadlockSystem: {fileID: 1988695520}
+  currentState: 0
 --- !u!4 &1148587162
 Transform:
   m_ObjectHideFlags: 0

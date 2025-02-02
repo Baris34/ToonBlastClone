@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a674018d8112424f8cd00d69faa950f, type: 3}
   m_Name: Level3Data
   m_EditorClassIdentifier: 
-  rows: 2
+  rows: 3
   cols: 2
   numColors: 3
   comboThresholdA: 2
