@@ -12,11 +12,8 @@ public class Block : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
-    // Referanslar
     [HideInInspector] public BoardManager boardManager;
 
-    // Burada sabit bir material referansını Inspector’dan verebilir 
-    // veya BoardManager aracılığıyla atayabilirsiniz.
     [SerializeField] private Material commonMaterial;
 
     private void Awake()
