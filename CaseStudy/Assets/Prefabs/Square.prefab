@@ -57,7 +57,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: a5d37f7dd9256804295a5b6ad96e6fe5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -105,7 +105,8 @@ MonoBehaviour:
   row: 0
   col: 0
   isMatched: 0
-  gridManager: {fileID: 0}
+  boardManager: {fileID: 0}
+  commonMaterial: {fileID: 2100000, guid: a5d37f7dd9256804295a5b6ad96e6fe5, type: 2}
 --- !u!61 &1290328202033814502
 BoxCollider2D:
   m_ObjectHideFlags: 0

@@ -1,28 +1,42 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(BoxCollider2D))] // 2D týklama için gereken collider
+[RequireComponent(typeof(BoxCollider2D))]
 public class Block : MonoBehaviour
 {
     public BlockFlyweight flyweight;
     public int row;
     public int col;
     public bool isMatched = false;
+
     private SpriteRenderer spriteRenderer;
 
-    // GridManager referansýný, blok týklandýðýnda haber verebilmek için tutuyoruz
-    [HideInInspector]
-    public BoardManager boardManager;
+    // Referanslar
+    [HideInInspector] public BoardManager boardManager;
+
+    // Burada sabit bir material referansýný Inspector’dan verebilir 
+    // veya BoardManager aracýlýðýyla atayabilirsiniz.
+    [SerializeField] private Material commonMaterial;
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        // BoxCollider2D ekli olduðunu da varsayýyoruz (RequireComponent kullandýk)
+
+        // 1) Tüm bloklar ayný ‘commonMaterial’ kullansýn
+        // (Örn. “URP 2D -> Sprite-Unlit-Default”)
+        if (commonMaterial != null)
+        {
+            // sharedMaterial kullanarak orijinal instance’ý koruruz
+            spriteRenderer.sharedMaterial = commonMaterial;
+        }
+
+        // 2) Ayný sorting layer + order:
+        // “Default” layer, order=0 (deðiþtirmiyorsak)
+        spriteRenderer.sortingLayerName = "Default";
+        spriteRenderer.sortingOrder = 0;
     }
 
-    // Pool’dan geldiðinde veya yeni oluþturulduðunda ilk ayarlar
     public void Initialize(BlockFlyweight fw, int r, int c)
     {
         flyweight = fw;
@@ -30,13 +44,15 @@ public class Block : MonoBehaviour
         col = c;
         isMatched = false;
 
-        if (spriteRenderer != null && fw != null)
+        if (spriteRenderer != null && flyweight != null)
         {
-            spriteRenderer.sprite = fw.sprite; // Normal sprite
+            // Normal sprite: 
+            // (Assuming all these sprites are in the same atlas)
+            spriteRenderer.sprite = flyweight.sprite;
         }
     }
 
-    // Grup boyutuna göre sprite deðiþtiren metod (combo logic)
+    // Grup boyutuna göre sprite deðiþtirmek (threshold logic)
     public void UpdateIconByGroupSize(int groupSize, LevelData levelData)
     {
         if (spriteRenderer == null || flyweight == null) return;
@@ -59,7 +75,6 @@ public class Block : MonoBehaviour
         }
     }
 
-    // 2D’de týklamayý bu þekilde alýyoruz
     private void OnMouseDown()
     {
         if (boardManager != null)

@@ -320,7 +320,7 @@ public class BoardManager : MonoBehaviour
 
         // 8) Son position
         transform.position = new Vector3(
-            camPos.x + offsetX+0.3f,
+            camPos.x + offsetX+0.20f,
             camPos.y + offsetY,
             0f
         );
