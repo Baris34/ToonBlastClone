@@ -24,6 +24,9 @@ public class BoardManager : MonoBehaviour
     // State Pattern
     public BoardState currentState = BoardState.Idle;
 
+    private float stateTimer;
+    private List<Block> currentProcessingBlocks = new List<Block>();
+
     private void Start()
     {
         CreateGrid();
@@ -31,6 +34,121 @@ public class BoardManager : MonoBehaviour
         ScaleGridToFitScreen();
     }
 
+    private void Update()
+    {
+        switch (currentState)
+        {
+            case BoardState.Removing:
+                UpdateRemovingState();
+                break;
+            case BoardState.Gravity:
+                UpdateGravityState();
+                break;
+            case BoardState.Refill:
+                UpdateRefillState();
+                break;
+            case BoardState.Checking:
+                UpdateCheckingState();
+                break;
+            case BoardState.Shuffling:
+                UpdateShufflingState();
+                break;
+        }
+    }
+
+    // -----------------------------
+    //  STATE MACHINE FUNCTIONS
+    // -----------------------------
+    private void UpdateRemovingState()
+    {
+        stateTimer -= Time.deltaTime;
+        if (stateTimer <= 0)
+        {
+
+            // Remove
+            foreach (var b in currentProcessingBlocks)
+            {
+                grid[b.row, b.col] = null;
+                b.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
+                poolManager.ReturnBlockToPool(b);
+            }
+
+            currentProcessingBlocks.Clear();
+            TransitionToState(BoardState.Gravity);
+            UpdateAllCombosAndSprites();
+        }
+    }
+
+    private void UpdateGravityState()
+    {
+        stateTimer -= Time.deltaTime;
+        if (stateTimer <= 0)
+        {
+            // Tüm animasyonlar tamamlandý
+            TransitionToState(BoardState.Refill);
+        }
+    }
+
+    private void UpdateRefillState()
+    {
+        stateTimer -= Time.deltaTime;
+        if (stateTimer <= 0)
+        {
+            // Tüm refill animasyonlarý tamam
+            TransitionToState(BoardState.Checking);
+            UpdateAllCombosAndSprites();
+        }
+    }
+
+    private void UpdateCheckingState()
+    {
+        bool noMoves = deadlockSystem.CheckNoMoves(grid, this);
+        if (noMoves)
+        {
+            TransitionToState(BoardState.Shuffling);
+            deadlockSystem.StartShuffle(grid, this);
+        }
+        else
+        {
+            TransitionToState(BoardState.Idle);
+        }
+    }
+
+    private void UpdateShufflingState()
+    {
+        if (!deadlockSystem.IsShuffling)
+        {
+            bool stillNoMoves = deadlockSystem.CheckNoMoves(grid, this);
+            TransitionToState(stillNoMoves ? BoardState.Shuffling : BoardState.Idle);
+        }
+    }
+
+    private void TransitionToState(BoardState newState)
+    {
+        currentState = newState;
+
+        switch (newState)
+        {
+            case BoardState.Removing:
+                stateTimer = 0.3f; // Remove animasyon süresi
+
+                break;
+
+            case BoardState.Gravity:
+                ApplyGravity();
+                stateTimer = 0.3f; // Gravity animasyon süresi
+                break;
+
+            case BoardState.Refill:
+                RefillGrid();
+                stateTimer = 0.3f; // Refill animasyon süresi
+                break;
+
+            case BoardState.Shuffling:
+                stateTimer = 0.3f;
+                break;
+        }
+    }
     // -----------------------------
     //  CREATE GRID
     // -----------------------------
@@ -60,7 +178,7 @@ public class BoardManager : MonoBehaviour
         bool noMoves = deadlockSystem.CheckNoMoves(grid, this);
         if (noMoves)
         {
-            StartCoroutine(deadlockSystem.ShuffleOneGroupAnimation(grid, this));
+            deadlockSystem.StartShuffle(grid, this);
         }
     }
 
@@ -69,71 +187,18 @@ public class BoardManager : MonoBehaviour
     // -----------------------------
     public void OnBlockClicked(Block clickedBlock)
     {
-        if (currentState != BoardState.Idle) return; // sadece Idle iken týklama
+        if (currentState != BoardState.Idle) return;
 
-        // BFS bul
         List<Block> group = FindGroup(clickedBlock.row, clickedBlock.col, clickedBlock.flyweight);
-        if (group.Count < 2) return; // patlatma yok
+        if (group.Count < 2) return;
 
-        // Durumu Removing yap
-        currentState = BoardState.Removing;
-        StartCoroutine(RemoveBlocksAnimation(group));
-        
+
+        currentProcessingBlocks = group;
+        TransitionToState(BoardState.Removing);
     }
 
-    private IEnumerator RemoveBlocksAnimation(List<Block> group)
+    private void ApplyGravity()
     {
-        // 0.3s scale-down
-        float animTime = 0.3f;
-        foreach (var b in group)
-        {
-            b.transform.DOScale(Vector3.zero, animTime).SetEase(Ease.InBack);
-        }
-        yield return new WaitForSeconds(animTime);
-
-        // Remove
-        foreach (var b in group)
-        {
-            grid[b.row, b.col] = null;
-            b.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
-            poolManager.ReturnBlockToPool(b);
-        }
-
-        // Patlatma bitti => devam puzzle flow
-        StartCoroutine(FlowPuzzleSteps());
-        UpdateAllCombosAndSprites();
-    }
-
-    // -----------------------------
-    //  FLOW PUZZLE STEPS
-    //  (Gravity -> Refill -> CheckDeadlock)
-    // -----------------------------
-    private IEnumerator FlowPuzzleSteps()
-    {
-        // 1) Gravity
-        currentState = BoardState.Gravity;
-        yield return StartCoroutine(ApplyGravityAnimation());
-
-        // 2) Refill
-        currentState = BoardState.Refill;
-        yield return StartCoroutine(RefillAnimation());
-
-        // 3) Deadlock Check
-        currentState = BoardState.Checking;
-        yield return StartCoroutine(CheckDeadlockRoutine());
-
-
-        if (currentState == BoardState.Checking)
-        {
-            // means no shuffle triggered => moves var
-            currentState = BoardState.Idle;
-        }
-    }
-
-    private IEnumerator ApplyGravityAnimation()
-    {
-        float animTime = 0.3f;
-
         for (int c = 0; c < currentLevelData.cols; c++)
         {
             int writeRow = 0;
@@ -148,17 +213,15 @@ public class BoardManager : MonoBehaviour
 
                         grid[writeRow, c].row = writeRow;
                         Vector3 newPos = CalculateBlockPosition(writeRow, c);
-                        grid[writeRow, c].transform.DOLocalMove(newPos, animTime).SetEase(Ease.OutBounce);
+                        grid[writeRow, c].transform.DOLocalMove(newPos, 0.3f).SetEase(Ease.OutBounce);
                     }
                     writeRow++;
                 }
             }
         }
-
-        yield return new WaitForSeconds(animTime);
     }
 
-    private IEnumerator RefillAnimation()
+    private void RefillGrid()
     {
         float animTime = 0.3f;
 
@@ -188,29 +251,24 @@ public class BoardManager : MonoBehaviour
             }
         }
         UpdateAllCombosAndSprites();
-        yield return new WaitForSeconds(animTime);
     }
-
-    private IEnumerator CheckDeadlockRoutine()
+    public void RemoveBlocks(List<Block> group)
     {
-        bool noMoves = deadlockSystem.CheckNoMoves(grid, this);
-        if (noMoves)
+        float animTime = 0.3f;
+        foreach (var b in group)
         {
-            currentState = BoardState.Shuffling;
-            yield return StartCoroutine(deadlockSystem.ShuffleOneGroupAnimation(grid, this));
-
-            // Shuffle bitti => tekrar no moves check edelim
-            bool stillNoMoves = deadlockSystem.CheckNoMoves(grid, this);
-            if (stillNoMoves)
-            {
-                // Oyun sonlandýr veya sonsuz loop
-            }
-            // Shuffle ile moves varsa => tekrar Idle'a
-            currentState = BoardState.Idle;
+            b.transform.DOScale(Vector3.zero, animTime).SetEase(Ease.InBack);
         }
-        yield return null;
-    }
 
+        // Remove
+        foreach (var b in group)
+        {
+            grid[b.row, b.col] = null;
+            b.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
+            poolManager.ReturnBlockToPool(b);
+        }
+        UpdateAllCombosAndSprites();
+    }
     private List<List<Block>> FindAllGroupsIncludeSingles()
     {
         List<List<Block>> groups = new List<List<Block>>();

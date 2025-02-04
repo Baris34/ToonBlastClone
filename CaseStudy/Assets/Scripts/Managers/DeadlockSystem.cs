@@ -5,6 +5,11 @@ using DG.Tweening;
 
 public class DeadlockSystem : MonoBehaviour
 {
+
+
+    public bool IsShuffling { get; private set; }
+    private float shuffleTimer=0.3f;
+    private List<Block> shuffleBlocks;
     public bool CheckNoMoves(Block[,] grid, BoardManager bm)
     {
         int rows = bm.currentLevelData.rows;
@@ -55,7 +60,7 @@ public class DeadlockSystem : MonoBehaviour
     /// Tek seferde "?2 grup" garantisi.
     /// Basit animTime=0.2f ile block'larý yerleþtirilir.
     /// </summary>
-    public IEnumerator ShuffleOneGroupAnimation(Block[,] grid, BoardManager bm)
+    public void StartShuffle(Block[,] grid, BoardManager bm)
     {
         int rows = bm.currentLevelData.rows;
         int cols = bm.currentLevelData.cols;
@@ -96,7 +101,6 @@ public class DeadlockSystem : MonoBehaviour
         }
         if (b1 == null)
         {
-            yield break;
         }
 
         if (cols >= 2)
@@ -114,7 +118,6 @@ public class DeadlockSystem : MonoBehaviour
         }
         else
         {
-            yield break;
         }
 
         // b1,b2 listeden çýkar
@@ -142,9 +145,21 @@ public class DeadlockSystem : MonoBehaviour
                 }
             }
         }
-
-        yield return new WaitForSeconds(animTime);
         bm.UpdateAllCombosAndSprites();
+        Update();
+    }
+
+public void Update()
+    {
+        if (IsShuffling)
+        {
+            shuffleTimer -= Time.deltaTime;
+            if (shuffleTimer <= 0)
+            {
+                IsShuffling = false;
+                shuffleBlocks?.Clear();
+            }
+        }
     }
 
     private void ShuffleList(List<Block> list)
@@ -152,9 +167,9 @@ public class DeadlockSystem : MonoBehaviour
         for (int i = list.Count - 1; i > 0; i--)
         {
             int rand = Random.Range(0, i + 1);
-            var tmp = list[i];
+            Block temp = list[i];
             list[i] = list[rand];
-            list[rand] = tmp;
+            list[rand] = temp;
         }
     }
 }

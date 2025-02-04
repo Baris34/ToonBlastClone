@@ -286,7 +286,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 8507056566188236141, guid: b9a294f1a91dae84da356a7dd55256a6, type: 3}
-  initialPoolSize: 9
+  initialPoolSize: 6
 --- !u!4 &519699210
 Transform:
   m_ObjectHideFlags: 0
