@@ -27,6 +27,10 @@ public class BoardManager : MonoBehaviour
     private float stateTimer;
     private List<Block> currentProcessingBlocks = new List<Block>();
 
+    private HashSet<Block> blocksToCheck = new HashSet<Block>();
+
+    private bool[,] visited;
+
     private void Start()
     {
         CreateGrid();
@@ -64,18 +68,19 @@ public class BoardManager : MonoBehaviour
         stateTimer -= Time.deltaTime;
         if (stateTimer <= 0)
         {
-
             // Remove
             foreach (var b in currentProcessingBlocks)
             {
                 grid[b.row, b.col] = null;
                 b.transform.localScale = new Vector3(0.32f, 0.32f, 1f);
                 poolManager.ReturnBlockToPool(b);
+
+                // Patlayan bloklarýn etrafýndaki bloklarý kontrol edilecekler listesine ekle
+                AddNearbyBlocksToCheck(b.row, b.col, 1); // 2 hücre yarýçapýnda kontrol edilecek.
             }
 
             currentProcessingBlocks.Clear();
             TransitionToState(BoardState.Gravity);
-            UpdateAllCombosAndSprites();
         }
     }
 
@@ -96,7 +101,7 @@ public class BoardManager : MonoBehaviour
         {
             // Tüm refill animasyonlarý tamam
             TransitionToState(BoardState.Checking);
-            UpdateAllCombosAndSprites();
+            UpdateCombosAndSpritesForAffectedBlocks();
         }
     }
 
@@ -181,15 +186,18 @@ public class BoardManager : MonoBehaviour
             deadlockSystem.StartShuffle(grid, this);
         }
     }
-
+    private void InitializeVisitedArray()
+    {
+        visited = new bool[currentLevelData.rows, currentLevelData.cols];
+    }
     // -----------------------------
     //  ON BLOCK CLICKED
     // -----------------------------
     public void OnBlockClicked(Block clickedBlock)
     {
         if (currentState != BoardState.Idle) return;
-
-        List<Block> group = FindGroup(clickedBlock.row, clickedBlock.col, clickedBlock.flyweight);
+        bool[,] visited = new bool[currentLevelData.rows, currentLevelData.cols];
+        List<Block> group = FindGroup(clickedBlock.row, clickedBlock.col, clickedBlock.flyweight,visited);
         if (group.Count < 2) return;
 
 
@@ -247,10 +255,70 @@ public class BoardManager : MonoBehaviour
                     newBlock.boardManager = this;
 
                     grid[r, c] = newBlock;
+
+                    // Yeni eklenen bloklarý kontrol edilecekler listesine ekle
+                    blocksToCheck.Add(newBlock);
+                    // Yeni eklenen bloklarýn ETRAFINDAKÝ bloklarý da kontrol edilecekler listesine ekle
+                    AddNearbyBlocksToCheck(r, c, 0); // Yarýçapý 1 olarak ayarladým, ihtiyaca göre deðiþtirebilirsin
                 }
             }
         }
-        UpdateAllCombosAndSprites();
+    }
+    public void UpdateCombosAndSpritesForAffectedBlocks()
+    {
+        // Kontrol edilecek bloklar listesini kopyala ve orijinal listeyi temizle
+        HashSet<Block> blocksToProcess = new HashSet<Block>(blocksToCheck);
+        blocksToCheck.Clear();
+
+        InitializeVisitedArray();
+
+        HashSet<Block> blocksAndTheirNeighbors = new HashSet<Block>();
+        foreach (Block b in blocksToProcess)
+        {
+            if (b != null)
+            {
+                blocksAndTheirNeighbors.Add(b);
+                AddNearbyBlocksToList(b.row, b.col, 1, blocksAndTheirNeighbors); // 1 yarýçapýndaki komþularý ekle
+            }
+        }
+        foreach (Block block in blocksAndTheirNeighbors)
+        {
+            if (block == null || visited[block.row, block.col]) continue;
+
+            List<Block> group = FindGroup(block.row, block.col, block.flyweight, visited);
+
+            int groupSize = group.Count;
+            foreach (Block b in group)
+            {
+                b.UpdateIconByGroupSize(groupSize, currentLevelData);
+            }
+        }
+    }
+    private void AddNearbyBlocksToCheck(int row, int col, int radius)
+    {
+        for (int r = Mathf.Max(0, row - radius); r <= Mathf.Min(currentLevelData.rows - 1, row + radius); r++)
+        {
+            for (int c = Mathf.Max(0, col - radius); c <= Mathf.Min(currentLevelData.cols - 1, col + radius); c++)
+            {
+                if (grid[r, c] != null)
+                {
+                    blocksToCheck.Add(grid[r, c]);
+                }
+            }
+        }
+    }
+    private void AddNearbyBlocksToList(int row, int col, int radius, HashSet<Block> list)
+    {
+        for (int r = Mathf.Max(0, row - radius); r <= Mathf.Min(currentLevelData.rows - 1, row + radius); r++)
+        {
+            for (int c = Mathf.Max(0, col - radius); c <= Mathf.Min(currentLevelData.cols - 1, col + radius); c++)
+            {
+                if (grid[r, c] != null)
+                {
+                    list.Add(grid[r, c]);
+                }
+            }
+        }
     }
     public void RemoveBlocks(List<Block> group)
     {
@@ -305,10 +373,9 @@ public class BoardManager : MonoBehaviour
     // -----------------------------
     //  BFS Tek grup
     // -----------------------------
-    private List<Block> FindGroup(int row, int col, BlockFlyweight fw)
+    private List<Block> FindGroup(int row, int col, BlockFlyweight fw, bool[,] visited)
     {
         List<Block> group = new List<Block>();
-        bool[,] visited = new bool[currentLevelData.rows, currentLevelData.cols];
         FloodFill(row, col, fw, visited, group);
         return group;
     }
