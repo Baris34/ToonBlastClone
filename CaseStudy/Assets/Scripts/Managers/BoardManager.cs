@@ -31,6 +31,8 @@ public class BoardManager : MonoBehaviour
 
     private bool[,] visited;
 
+    Queue<Block> queue = new Queue<Block>();
+
     private void Start()
     {
         CreateGrid();
@@ -221,6 +223,7 @@ public class BoardManager : MonoBehaviour
 
                         grid[writeRow, c].row = writeRow;
                         Vector3 newPos = CalculateBlockPosition(writeRow, c);
+                        blocksToCheck.Add(grid[writeRow, c]);
                         grid[writeRow, c].transform.DOLocalMove(newPos, 0.3f).SetEase(Ease.OutBounce);
                     }
                     writeRow++;
@@ -288,9 +291,20 @@ public class BoardManager : MonoBehaviour
             List<Block> group = FindGroup(block.row, block.col, block.flyweight, visited);
 
             int groupSize = group.Count;
-            foreach (Block b in group)
+
+            // Tek elemanlý gruplar için özel iþlem
+            if (groupSize == 1)
             {
-                b.UpdateIconByGroupSize(groupSize, currentLevelData);
+                group[0].UpdateIconByGroupSize(1, currentLevelData); // Her zaman default ikonu göster
+                                                                     // Veya group[0].UpdateIconByGroupSize(0, currentLevelData);  gibi bir deðer de kullanabilirsin, 
+                                                                     // UpdateIconByGroupSize() içinde 0'a özel bir iþlem yapman gerekir.
+            }
+            else
+            {
+                foreach (Block b in group)
+                {
+                    b.UpdateIconByGroupSize(groupSize, currentLevelData);
+                }
             }
         }
     }
@@ -342,18 +356,36 @@ public class BoardManager : MonoBehaviour
         List<List<Block>> groups = new List<List<Block>>();
         bool[,] visited = new bool[currentLevelData.rows, currentLevelData.cols];
 
-        for (int r = 0; r < currentLevelData.rows; r++)
+        // Sadece kontrol edilmesi gereken bloklarý (blocksToCheck) ve etraflarýný gez
+        HashSet<Block> blocksAndTheirNeighbors = new HashSet<Block>();
+        foreach (Block b in blocksToCheck)
         {
-            for (int c = 0; c < currentLevelData.cols; c++)
+            if (b != null)
             {
-                if (!visited[r, c] && grid[r, c] != null)
+                blocksAndTheirNeighbors.Add(b);
+                AddNearbyBlocksToList(b.row, b.col, 1, blocksAndTheirNeighbors); // 1 yarýçapýndaki komþularý ekle
+            }
+        }
+        //Eðer kontrol edilmesi gerekenler listesi boþ ise boardun tamamýný gez
+        if (blocksAndTheirNeighbors.Count == 0)
+        {
+            for (int r = 0; r < currentLevelData.rows; r++)
+            {
+                for (int c = 0; c < currentLevelData.cols; c++)
                 {
-                    List<Block> group = new List<Block>();
-                    FloodFill(r, c, grid[r, c].flyweight, visited, group);
-                    groups.Add(group);
+                    blocksAndTheirNeighbors.Add(grid[r, c]);
                 }
             }
         }
+
+        foreach (Block block in blocksAndTheirNeighbors)
+        {
+            if (block == null || visited[block.row, block.col]) continue;
+
+            List<Block> group = FindGroup(block.row, block.col, block.flyweight, visited);
+            groups.Add(group);
+        }
+
         return groups;
     }
 
@@ -376,23 +408,39 @@ public class BoardManager : MonoBehaviour
     private List<Block> FindGroup(int row, int col, BlockFlyweight fw, bool[,] visited)
     {
         List<Block> group = new List<Block>();
-        FloodFill(row, col, fw, visited, group);
+        queue.Clear(); // Kuyruk kullanarak iterative BFS
+
+        if (row < 0 || row >= currentLevelData.rows || col < 0 || col >= currentLevelData.cols) return group;
+        if (visited[row, col] || grid[row, col] == null) return group;
+        if (grid[row, col].flyweight != fw) return group;
+
+        queue.Enqueue(grid[row, col]);
+        visited[row, col] = true;
+
+        int[] rowOffsets = { -1, 1, 0, 0 }; // Yukarý, Aþaðý, Sol, Sað
+        int[] colOffsets = { 0, 0, -1, 1 }; // Yukarý, Aþaðý, Sol, Sað
+
+        while (queue.Count > 0)
+        {
+            Block currentBlock = queue.Dequeue();
+            group.Add(currentBlock);
+
+            // 4 yöne komþularý kontrol et
+            for (int i = 0; i < 4; i++)
+            {
+                int newRow = currentBlock.row + rowOffsets[i];
+                int newCol = currentBlock.col + colOffsets[i];
+
+                if (newRow < 0 || newRow >= currentLevelData.rows || newCol < 0 || newCol >= currentLevelData.cols) continue;
+                if (visited[newRow, newCol] || grid[newRow, newCol] == null) continue;
+                if (grid[newRow, newCol].flyweight != fw) continue;
+
+                queue.Enqueue(grid[newRow, newCol]);
+                visited[newRow, newCol] = true;
+            }
+        }
+
         return group;
-    }
-
-    private void FloodFill(int r, int c, BlockFlyweight fw, bool[,] visited, List<Block> group)
-    {
-        if (r < 0 || r >= currentLevelData.rows || c < 0 || c >= currentLevelData.cols) return;
-        if (visited[r, c] || grid[r, c] == null) return;
-        if (grid[r, c].flyweight != fw) return;
-
-        visited[r, c] = true;
-        group.Add(grid[r, c]);
-
-        FloodFill(r + 1, c, fw, visited, group);
-        FloodFill(r - 1, c, fw, visited, group);
-        FloodFill(r, c + 1, fw, visited, group);
-        FloodFill(r, c - 1, fw, visited, group);
     }
 
     // -----------------------------

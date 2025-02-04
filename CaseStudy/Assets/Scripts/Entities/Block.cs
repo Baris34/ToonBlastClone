@@ -16,6 +16,8 @@ public class Block : MonoBehaviour
 
     [SerializeField] private Material commonMaterial;
 
+    private MaterialPropertyBlock _propBlock;
+
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
