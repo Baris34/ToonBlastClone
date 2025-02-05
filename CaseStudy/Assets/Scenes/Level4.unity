@@ -286,7 +286,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 8507056566188236141, guid: b9a294f1a91dae84da356a7dd55256a6, type: 3}
-  initialPoolSize: 6
+  initialPoolSize: 9
 --- !u!4 &519699210
 Transform:
   m_ObjectHideFlags: 0
@@ -331,12 +331,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3c0cf68cea00854fae7e5766967ccf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentLevelData: {fileID: 11400000, guid: 9ba5c25b345317340b56309859d5950c, type: 2}
+  currentLevelData: {fileID: 11400000, guid: 8a53d54e3db687347bb4e814951a3304, type: 2}
   blockFlyweights:
   - {fileID: 11400000, guid: 28b0d6981c5f8734bbd9fa8f700a3950, type: 2}
   - {fileID: 11400000, guid: 82e9ecc6c555a204193608918c7a1e0a, type: 2}
   - {fileID: 11400000, guid: 84acd28fc2f8f6045a5eb64f17781052, type: 2}
   - {fileID: 11400000, guid: 3e98daeded6796548bfcda9798b811b1, type: 2}
+  - {fileID: 11400000, guid: 6a1071b1dedb89742a25361142f47e82, type: 2}
+  - {fileID: 11400000, guid: b9f217d021e5cba42a3b3b7bda78a2ac, type: 2}
   cellSize: {x: 0.7, y: 0.8}
   poolManager: {fileID: 519699209}
   deadlockSystem: {fileID: 1988695520}

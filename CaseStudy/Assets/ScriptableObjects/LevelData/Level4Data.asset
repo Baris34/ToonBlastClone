@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Level4Data
   m_EditorClassIdentifier: 
   rows: 3
-  cols: 2
-  numColors: 3
+  cols: 3
+  numColors: 4
   comboThresholdA: 2
   comboThresholdB: 3
   comboThresholdC: 4

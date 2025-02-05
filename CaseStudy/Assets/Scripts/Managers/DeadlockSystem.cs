@@ -67,6 +67,8 @@ public class DeadlockSystem : MonoBehaviour
 
         // Tablodaki tüm bloklarý listede topla
         List<Block> allBlocks = new List<Block>();
+        Dictionary<BlockFlyweight, int> colorCounts = new Dictionary<BlockFlyweight, int>();
+
         for (int r = 0; r < rows; r++)
         {
             for (int c = 0; c < cols; c++)
@@ -74,95 +76,93 @@ public class DeadlockSystem : MonoBehaviour
                 if (grid[r, c] != null)
                 {
                     allBlocks.Add(grid[r, c]);
-                    grid[r, c] = null;
+                    if (!colorCounts.ContainsKey(grid[r, c].flyweight))
+                    {
+                        colorCounts[grid[r, c].flyweight] = 0;
+                    }
+                    colorCounts[grid[r, c].flyweight]++;
+                    grid[r, c] = null; // Grid'deki bloklarý temizle
                 }
             }
         }
 
-        // color->block list
-        Dictionary<BlockFlyweight, List<Block>> colorDict = new Dictionary<BlockFlyweight, List<Block>>();
-        foreach (var b in allBlocks)
+        // En fazla renge sahip olaný bul
+        BlockFlyweight mostCommonColor = null;
+        int maxCount = 0;
+        foreach (var kvp in colorCounts)
         {
-            if (!colorDict.ContainsKey(b.flyweight))
-                colorDict[b.flyweight] = new List<Block>();
-            colorDict[b.flyweight].Add(b);
-        }
-
-        // >=2 block bul
-        Block b1 = null, b2 = null;
-        foreach (var kvp in colorDict)
-        {
-            if (kvp.Value.Count >= 2)
+            if (kvp.Value > maxCount)
             {
-                b1 = kvp.Value[0];
-                b2 = kvp.Value[1];
-                break;
+                mostCommonColor = kvp.Key;
+                maxCount = kvp.Value;
             }
         }
-        if (b1 == null)
+
+        // En fazla renkten olan bloklarý ayýr
+        List<Block> mostCommonColorBlocks = new List<Block>();
+        List<Block> otherBlocks = new List<Block>();
+        foreach (Block block in allBlocks)
         {
-        }
-
-        if (cols >= 2)
-        {
-            // Yatay => [0,0] & [0,1]
-            grid[0, 0] = b1;
-            b1.row = 0; b1.col = 0;
-            Vector3 pos1 = bm.CalculateBlockPosition(0, 0);
-            b1.transform.DOLocalMove(pos1, 0.2f);
-
-            grid[0, 1] = b2;
-            b2.row = 0; b2.col = 1;
-            Vector3 pos2 = bm.CalculateBlockPosition(0, 1);
-            b2.transform.DOLocalMove(pos2, 0.2f);
-        }
-        else
-        {
-        }
-
-        // b1,b2 listeden çýkar
-        allBlocks.Remove(b1);
-        allBlocks.Remove(b2);
-
-        // Geri kalan block'larý karýþtýr
-        ShuffleList(allBlocks);
-
-        // Boþ hücrelere doldur
-        float animTime = 0.2f;
-        int idx = 0;
-        for (int rr = 0; rr < rows; rr++)
-        {
-            for (int cc = 0; cc < cols; cc++)
+            if (block.flyweight == mostCommonColor)
             {
-                if (grid[rr, cc] == null)
-                {
-                    var block = allBlocks[idx];
-                    idx++;
-                    grid[rr, cc] = block;
-                    block.row = rr; block.col = cc;
-                    Vector3 p = bm.CalculateBlockPosition(rr, cc);
-                    block.transform.DOLocalMove(p, animTime);
-                }
+                mostCommonColorBlocks.Add(block);
+            }
+            else
+            {
+                otherBlocks.Add(block);
             }
         }
-        bm.UpdateAllCombosAndSprites();
-        Update();
+
+        // Diðer bloklarý Fisher-Yates algoritmasýyla karýþtýr
+        FisherYatesShuffle(otherBlocks);
+
+        // Grid'e yerleþtirme
+        int index = 0;
+
+        // Önce en fazla renkten olan bloklarý grid'in üst kýsmýna yatay olarak yerleþtir
+        foreach (Block block in mostCommonColorBlocks)
+        {
+            int r = index / cols; // Satýr hesaplama
+            int c = index % cols; // Sütun hesaplama
+
+            // Eðer satýr dolmuþsa bir alt satýra geç
+            if (c == 0 && r > 0)
+            {
+                index = r * cols;
+            }
+
+            grid[r, c] = block;
+            block.row = r;
+            block.col = c;
+            Vector3 pos = bm.CalculateBlockPosition(r, c);
+            block.transform.DOLocalMove(pos, 0.2f); // Bloklarý animasyonla taþý
+            index++;
+        }
+
+        // Kalan bloklarý grid'in altýna rastgele yerleþtir
+        foreach (Block block in otherBlocks)
+        {
+            while (grid[index / cols, index % cols] != null)
+            {
+                index++; // Boþ bir hücre bulana kadar devam et
+            }
+
+            int r = index / cols;
+            int c = index % cols;
+
+            grid[r, c] = block;
+            block.row = r;
+            block.col = c;
+            Vector3 pos = bm.CalculateBlockPosition(r, c);
+            block.transform.DOLocalMove(pos, 0.2f); // Bloklarý animasyonla taþý
+            index++;
+        }
+
+        
     }
 
-public void Update()
-    {
-        if (IsShuffling)
-        {
-            shuffleTimer -= Time.deltaTime;
-            if (shuffleTimer <= 0)
-            {
-                IsShuffling = false;
-                shuffleBlocks?.Clear();
-            }
-        }
-    }
 
-    private void ShuffleList(List<Block> list)
+    private void FisherYatesShuffle(List<Block> list)
     {
         for (int i = list.Count - 1; i > 0; i--)
         {
