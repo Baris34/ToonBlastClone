@@ -113,7 +113,7 @@ public class BoardManager : MonoBehaviour
         if (noMoves)
         {
             TransitionToState(BoardState.Shuffling);
-            deadlockSystem.StartShuffle(grid, this);
+            deadlockSystem.SmartShuffle(grid, this);
         }
         else
         {
@@ -185,7 +185,7 @@ public class BoardManager : MonoBehaviour
         bool noMoves = deadlockSystem.CheckNoMoves(grid, this);
         if (noMoves)
         {
-            deadlockSystem.StartShuffle(grid, this);
+            deadlockSystem.SmartShuffle(grid, this);
         }
     }
     private void InitializeVisitedArray()

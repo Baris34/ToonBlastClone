@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-// Basit bir "Block" havuzu yöneticisi
 public class BlockPoolManager : MonoBehaviour
 {
     [Header("Block Pool Settings")]
@@ -24,9 +23,6 @@ public class BlockPoolManager : MonoBehaviour
             blockPool.Enqueue(obj.GetComponent<Block>());
         }
     }
-
-    // Kullanýlabilir bir Block döndürür.
-    // Eðer havuz boþ ise (optionel) yeni Instantiate yapar veya hata verebilir.
     public Block GetBlockFromPool()
     {
         if (blockPool.Count > 0)
@@ -37,7 +33,6 @@ public class BlockPoolManager : MonoBehaviour
         }
         else
         {
-            // Havuz biterse yenisini yaratabilirsin veya limit koyabilirsin
             GameObject obj = Instantiate(blockPrefab, transform);
             return obj.GetComponent<Block>();
         }

@@ -21,17 +21,10 @@ public class Block : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // 1) Tüm bloklar ayný ‘commonMaterial’ kullansýn
-        // (Örn. “URP 2D -> Sprite-Unlit-Default”)
         if (commonMaterial != null)
         {
-            // sharedMaterial kullanarak orijinal instance’ý koruruz
             spriteRenderer.sharedMaterial = commonMaterial;
         }
-
-        // 2) Ayný sorting layer + order:
-        // “Default” layer, order=0 (deðiþtirmiyorsak)
         spriteRenderer.sortingLayerName = "Default";
         spriteRenderer.sortingOrder = 0;
     }
@@ -45,13 +38,10 @@ public class Block : MonoBehaviour
 
         if (spriteRenderer != null && flyweight != null)
         {
-            // Normal sprite: 
-            // (Assuming all these sprites are in the same atlas)
             spriteRenderer.sprite = flyweight.sprite;
         }
     }
 
-    // Grup boyutuna göre sprite deðiþtirmek (threshold logic)
     public void UpdateIconByGroupSize(int groupSize, LevelData levelData)
     {
         if (spriteRenderer == null || flyweight == null) return;

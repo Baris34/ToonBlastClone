@@ -8,7 +8,6 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        // Oyuna seviye 1 ile baþla
         LoadLevel(1);
     }
 
@@ -22,6 +21,5 @@ public class LevelManager : MonoBehaviour
         {
             gridManager.LoadLevel(level2Data);
         }
-        // ... diðer seviyeler için else if bloklarý ...
     }
 }
