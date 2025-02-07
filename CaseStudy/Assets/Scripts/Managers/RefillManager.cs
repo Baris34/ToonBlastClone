@@ -23,7 +23,7 @@ public class RefillManager
 
     public void Refill() //Refills the grid with new blocks after blocks are removed.
     {
-        float animTime = 0.3f;
+        float animTime = 0.2f;
 
         for (int c = 0; c < cols; c++)
         {

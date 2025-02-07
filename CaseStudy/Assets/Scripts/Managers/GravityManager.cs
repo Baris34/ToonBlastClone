@@ -38,7 +38,7 @@ public class GravityManager
                         Vector3 newPos = boardManager.gridManager.CalculateBlockPosition(writeRow, c);
 
                         boardManager.blocksToCheck.Add(grid[writeRow, c]);
-                        grid[writeRow, c].transform.DOLocalMove(newPos, 0.3f).SetEase(Ease.OutBounce);
+                        grid[writeRow, c].transform.DOLocalMove(newPos, 0.2f).SetEase(Ease.OutBounce);
 
                     }
                     writeRow++;
