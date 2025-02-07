@@ -27,8 +27,6 @@ public class Block : MonoBehaviour
         {
             spriteRenderer.sharedMaterial = commonMaterial;
         }
-        spriteRenderer.sortingLayerName = "Default";
-        spriteRenderer.sortingOrder = 0;
     }
 
     public void Initialize(BlockFlyweight fw, int r, int c) //Initializes the block with a BlockFlyweight and position in the grid
