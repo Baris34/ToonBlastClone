@@ -3,8 +3,11 @@ using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(BoxCollider2D))]
+
+//Represents a block in the game board
 public class Block : MonoBehaviour
 {
+    #region Variables
     public BlockFlyweight flyweight;
     public int row;
     public int col;
@@ -15,8 +18,7 @@ public class Block : MonoBehaviour
     [HideInInspector] public BoardManager boardManager;
 
     [SerializeField] private Material commonMaterial;
-
-    private MaterialPropertyBlock _propBlock;
+    #endregion
 
     private void Awake()
     {
@@ -29,7 +31,7 @@ public class Block : MonoBehaviour
         spriteRenderer.sortingOrder = 0;
     }
 
-    public void Initialize(BlockFlyweight fw, int r, int c)
+    public void Initialize(BlockFlyweight fw, int r, int c) //Initializes the block with a BlockFlyweight and position in the grid
     {
         flyweight = fw;
         row = r;
@@ -42,7 +44,7 @@ public class Block : MonoBehaviour
         }
     }
 
-    public void UpdateIconByGroupSize(int groupSize, LevelData levelData)
+    public void UpdateIconByGroupSize(int groupSize, LevelData levelData) //Updates the block's sprite based on the group size
     {
         if (spriteRenderer == null || flyweight == null) return;
 
@@ -64,7 +66,7 @@ public class Block : MonoBehaviour
         }
     }
 
-    private void OnMouseDown()
+    private void OnMouseDown() //Handles block click events
     {
         if (boardManager != null)
         {

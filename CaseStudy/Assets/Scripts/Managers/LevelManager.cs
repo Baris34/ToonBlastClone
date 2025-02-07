@@ -1,5 +1,6 @@
 using UnityEngine;
 
+//Manages the game levels, loading the level data and passing it to the grid manager.
 public class LevelManager : MonoBehaviour
 {
     public BoardManager gridManager;
@@ -11,7 +12,7 @@ public class LevelManager : MonoBehaviour
         LoadLevel(1);
     }
 
-    public void LoadLevel(int levelNumber)
+    public void LoadLevel(int levelNumber) //Loads the level data and passes it to the grid manager.
     {
         if (levelNumber == 1)
         {

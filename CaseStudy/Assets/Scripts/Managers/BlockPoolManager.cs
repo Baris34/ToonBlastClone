@@ -1,20 +1,25 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+//Manages the block pool, instantiates and recycles block objects.
 public class BlockPoolManager : MonoBehaviour
 {
+    #region Variables
     [Header("Block Pool Settings")]
     public GameObject blockPrefab;
-    public int initialPoolSize = 100;
-
+    public int initialPoolSize;
+    public BoardManager boardManager;
     private Queue<Block> blockPool = new Queue<Block>();
+
+    #endregion
 
     private void Awake()
     {
+        initialPoolSize = boardManager.currentLevelData.rows * boardManager.currentLevelData.cols;
         InitializePool();
     }
 
-    private void InitializePool()
+    private void InitializePool() //Initializes the block pool with a set number of blocks
     {
         for (int i = 0; i < initialPoolSize; i++)
         {
@@ -23,7 +28,7 @@ public class BlockPoolManager : MonoBehaviour
             blockPool.Enqueue(obj.GetComponent<Block>());
         }
     }
-    public Block GetBlockFromPool()
+    public Block GetBlockFromPool() //Returns a block from the pool
     {
         if (blockPool.Count > 0)
         {
@@ -38,7 +43,7 @@ public class BlockPoolManager : MonoBehaviour
         }
     }
 
-    public void ReturnBlockToPool(Block block)
+    public void ReturnBlockToPool(Block block) //Returns a block to the pool
     {
         block.gameObject.SetActive(false);
         blockPool.Enqueue(block);
