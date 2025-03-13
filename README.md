@@ -7,7 +7,7 @@
 
 ---
 ## 🎬 Gameplay Demo
-[![Watch the video](https://img.youtube.com/vi/P0Pmu3ONbZE/maxresdefault.jpg)](https://youtu.be/P0Pmu3ONbZE)
+https://github.com/user-attachments/assets/d03989ac-0bbf-4a68-b9ed-148d9626221b
 
 ## 📌 **About the Project**
 Toon Blast Clone is a **tile-matching puzzle game** that features an **optimized collapse/blast mechanic**.  
